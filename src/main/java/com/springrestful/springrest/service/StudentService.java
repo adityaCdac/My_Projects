@@ -7,9 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.springrestful.springrest.dao.CourseDao;
+import com.springrestful.springrest.dao.StudentCourseDao;
 import com.springrestful.springrest.dao.StudentDao;
 import com.springrestful.springrest.model.Course;
 import com.springrestful.springrest.model.Student;
+import com.springrestful.springrest.model.StudentCourse;
 import com.springrestful.springrest.model.StudentLogin;
 @Service
 public class StudentService {
@@ -19,12 +21,17 @@ public class StudentService {
 	@Autowired
 	private CourseDao courseDao;
 	
+	@Autowired
+	private StudentCourseDao studentCourseDao;
+	
 	public List<Course> getAllCourses(){
 		return courseDao.findAll();
 	}
 	
 	public List<Student> getAllStudents(){
-		return studentDao.findAll();
+		List<Student> students=studentDao.findAll();
+		
+		return students;
 	}
 	
 	
@@ -40,6 +47,13 @@ public class StudentService {
 	
 	public Student updateStudent(Student student) {
 		Student std=studentDao.findById(student.getId()).get();
+		std.setCity(student.getCity());
+		std.setCollegeName(student.getCollegeName());
+		std.setEmail(student.getEmail());
+		std.setMobileNo(student.getMobileNo());
+		std.setName(student.getName());
+		std.setPincode(student.getPincode());
+		std.setState(student.getState());
 		studentDao.save(std);
 		return std;
 	}
@@ -64,17 +78,41 @@ public class StudentService {
 	
 	
 	public List<Course> getAllCourses(int id){
-		List<Course>course1=new ArrayList<>();
-		Student std=studentDao.findById(id).get();
-		List<Student>students=studentDao.findAll();
-		for(Student student: students) {
-			if(student.getEmail().equals(std.getEmail())) {
-				course1.add(student.getCourse());
-				
+			List<StudentCourse> studentCourses=studentCourseDao.findAll();
+			List<Course> courses=new ArrayList<>();
+			for(StudentCourse studentCourse : studentCourses) {
+				if(studentCourse.getStudent().getId()==id) {
+					courses.add(studentCourse.getCourse());
+				}
 			}
-		}
-		
-		return course1;	
+			return courses;
 	}
 	
+	public List<Course> getOtherCourses(int id){
+		List<StudentCourse> studentCourses=studentCourseDao.findAll();
+		List<Course> courses=new ArrayList<>();
+		for(StudentCourse studentCourse : studentCourses) {
+			if(studentCourse.getStudent().getId()==id) {
+				courses.add(studentCourse.getCourse());
+			}
+		}
+		List<Course> courses1=courseDao.findAll();
+		
+		
+		courses1.removeAll(courses);
+		
+		return courses1;
+	
+	}	
+	
+	public boolean buyCourse(Student student, int id) {
+		Course course=courseDao.findById(id).get();
+		StudentCourse studentCourse=new StudentCourse();
+		Student student1=studentDao.findById(student.getId()).get();
+		studentCourse.setCourse(course);
+		studentCourse.setStudent(student1);
+		studentCourseDao.save(studentCourse);
+		return true;
+		
+	}
 }

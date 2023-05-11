@@ -1,10 +1,12 @@
 package com.springrestful.springrest.controller;
 
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +20,7 @@ import com.springrestful.springrest.model.Student;
 import com.springrestful.springrest.model.StudentLogin;
 import com.springrestful.springrest.service.StudentService;
 
+@CrossOrigin
 @RestController
 public class StudentController {
 	
@@ -51,12 +54,24 @@ public class StudentController {
 	}
 	
 	@PostMapping("/student-login")
-	public ResponseEntity<HttpStatus> authenticateStudent(@RequestBody StudentLogin studentLogin){
+	public ResponseEntity<Integer> authenticateStudent(@RequestBody StudentLogin studentLogin){
 		boolean success=studentService.authenicateStudent(studentLogin);
+		List<Student> list=studentService.getAllStudents();
+		int id=0;
 		if(success==true)
-			return new ResponseEntity<>(HttpStatus.OK);
+		{
+			for(Student item : list) {
+				if(item.getEmail().equals(studentLogin.getEmailId())&& item.getPassword().equals(studentLogin.getPassword())){
+					id=item.getId();
+					break;
+				}
+			
+			
+		}
+			return new ResponseEntity<>(id,HttpStatus.OK);
+		}
 		else
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(0,HttpStatus.NOT_FOUND);
 		
 	}
 	
@@ -64,4 +79,18 @@ public class StudentController {
 	public List<Course> getAllCourses(@PathVariable String studentId){
 		return studentService.getAllCourses(Integer.parseInt(studentId));
 	}
+	
+	@GetMapping("/student/other-courses/{studentId}")
+	public List<Course> getOtherCourses(@PathVariable String studentId){
+		return studentService.getOtherCourses(Integer.parseInt(studentId));
+	}
+	
+	@PostMapping("/buy/{courseId}")
+	public ResponseEntity<HttpStatus> buyCourse(@RequestBody Student student,@PathVariable String courseId ){
+		boolean result=studentService.buyCourse(student, Integer.parseInt(courseId));
+		if(result==true)
+			return new ResponseEntity<>(HttpStatus.OK);
+		else 
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+}
 }

@@ -1,32 +1,38 @@
 package com.springrestful.springrest.model;
 
 import java.sql.Date;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 
 
 @Entity
 public class Faculty{
 	@Id
+	@GeneratedValue
 	private int id;
 	private String facultyName;
 	private double salary;
 	private Date joinedDate;
 	
-	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name="fk_course_id")
-	private Course course;
+	@JsonIgnore
+	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL,targetEntity = Course.class,mappedBy = "faculty")
+	private List<Course>courses;
 
-	public Faculty(int id, String facultyName, double salary, Date joinedDate, Course course) {
+	public Faculty(int id, String facultyName, double salary, Date joinedDate, List<Course> courses) {
 		super();
 		this.id = id;
 		this.facultyName = facultyName;
 		this.salary = salary;
 		this.joinedDate = joinedDate;
-		this.course = course;
+		this.courses = courses;
 	}
 
 	public Faculty() {
@@ -66,13 +72,14 @@ public class Faculty{
 		this.joinedDate = joinedDate;
 	}
 
-	public Course getCourse() {
-		return course;
+	public List<Course> getCourses() {
+		return courses;
 	}
 
-	public void setCourse(Course course) {
-		this.course = course;
+	public void setCourses(List<Course> courses) {
+		this.courses = courses;
 	}
+	
 	
 	
 }
